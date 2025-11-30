@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DS App',
+      title: 'Flutter_OCR',
       home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
     );
