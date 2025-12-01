@@ -135,8 +135,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeader(
       BuildContext context, ThemeProvider themeProvider, bool isDark) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // Left Side (Title)
+        Image.asset(
+          "images/logo.png",
+          height: 85,
+          width: 85,
+        ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -157,6 +162,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+
+        // This pushes the logo to the center
+        const Spacer(),
+
+        // Team Logo
+
+        const SizedBox(width: 16),
+
+        // Dark / Light Button
         Container(
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
@@ -367,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildActionButton(
-            icon: Icons.volume_up,
+            icon: Icons.record_voice_over,
             label: 'TTS',
             onTap: _openTtsScreen,
             isDark: isDark,
