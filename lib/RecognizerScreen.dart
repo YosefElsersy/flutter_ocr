@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
+
 class RecognizerScreen extends StatefulWidget {
   final File image;
-  
+
   const RecognizerScreen(this.image, {super.key});
 
   @override
@@ -14,7 +15,7 @@ class RecognizerScreen extends StatefulWidget {
 
 class _RecognizerScreenState extends State<RecognizerScreen> {
   late TextRecognizer textRecognizer;
-  String results = "جاري التحليل...";
+  String results = "Processing...";
   bool isLoading = true;
 
   @override
@@ -28,29 +29,26 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
     try {
       setState(() {
         isLoading = true;
-        results = "جاري التحليل...";
+        results = "Processing...";
       });
 
       final InputImage inputImage = InputImage.fromFile(widget.image);
-      final RecognizedText recognizedText = 
+      final RecognizedText recognizedText =
           await textRecognizer.processImage(inputImage);
 
-      if (!mounted) return; // ✅ إصلاح use_build_context_synchronously
+      if (!mounted) return; 
 
       setState(() {
-        results = recognizedText.text.isNotEmpty 
-            ? recognizedText.text 
-            : "لم يتم العثور على نص";
+        results = recognizedText.text.isNotEmpty
+            ? recognizedText.text
+            : "No text found";
         isLoading = false;
       });
-
-      // 🗑️ حذف الكود غير المستخدم
-      // for (TextBlock block in recognizedText.blocks) { ... }
 
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        results = "خطأ في التحليل: $e";
+        results = "Error: $e";
         isLoading = false;
       });
     }
@@ -64,12 +62,12 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
 
   void copyToClipboard() {
     Clipboard.setData(ClipboardData(text: results));
-    
+
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("تم النسخ! ✅"),
+        content: Text("Copied!"),
         duration: Duration(seconds: 2),
         backgroundColor: Colors.green,
       ),
@@ -92,7 +90,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // الصورة
+            // Image Display
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.file(
@@ -104,7 +102,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
             ),
             const SizedBox(height: 20),
 
-            // نتائج التحليل
+            // Analysis Card
             Card(
               elevation: 8,
               shape: RoundedRectangleBorder(
@@ -127,11 +125,11 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.document_scanner, 
-                                 color: Colors.white, size: 24),
+                              Icon(Icons.document_scanner,
+                                  color: Colors.white, size: 24),
                               SizedBox(width: 8),
                               Text(
-                                'نتائج التحليل',
+                                'Analysis Results',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -159,18 +157,20 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                         ],
                       ),
                     ),
+
                     const SizedBox(height: 16),
 
-                    // حالة التحميل
+                    // Loading State
                     if (isLoading)
                       const Column(
                         children: [
                           CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.blueAccent),
                           ),
                           SizedBox(height: 12),
                           Text(
-                            'جاري تحليل النص...',
+                            'Analyzing...',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.grey,
@@ -180,7 +180,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                         ],
                       ),
 
-                    // النتائج
+                    // Output Text
                     if (!isLoading)
                       Container(
                         width: double.infinity,
@@ -201,11 +201,11 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                                 color: Colors.black87,
                               ),
                             ),
-                            if (results == "لم يتم العثور على نص")
+                            if (results == "No text found")
                               const Padding(
                                 padding: EdgeInsets.only(top: 8),
                                 child: Text(
-                                  "💡 تأكد من وضوح الصورة وحاول مرة أخرى",
+                                  "💡 Make sure the image is clear and try again",
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.orange,
@@ -223,12 +223,12 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
 
             const SizedBox(height: 20),
 
-            // زر إعادة المحاولة
+            // Retry Button
             if (!isLoading)
               ElevatedButton.icon(
                 onPressed: doTextRecognition,
                 icon: const Icon(Icons.refresh),
-                label: const Text('إعادة التحليل'),
+                label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   foregroundColor: Colors.white,
