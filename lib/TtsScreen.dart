@@ -21,6 +21,16 @@ class _TtsScreenState extends State<TtsScreen> {
   String translatedText = "";
   bool isTranslating = false;
 
+  String selectedTranslateLang = "ar";
+
+  final translationLanguages = {
+    "Arabic": "ar",
+    "English": "en",
+    "French": "fr",
+    "Spanish": "es",
+    "German": "de",
+  };
+
   @override
   void initState() {
     super.initState();
@@ -47,7 +57,11 @@ class _TtsScreenState extends State<TtsScreen> {
     setState(() => isTranslating = true);
 
     final translator = GoogleTranslator();
-    final translation = await translator.translate(recognizedText, to: 'ar');
+    // final translation = await translator.translate(recognizedText, to: 'ar');
+    final translation = await translator.translate(
+      recognizedText,
+      to: selectedTranslateLang,
+    );
 
     translatedText = translation.text;
     isTranslating = false;
@@ -74,8 +88,7 @@ class _TtsScreenState extends State<TtsScreen> {
 
     if (textToRead.trim().isEmpty) return;
 
-    await flutterTts.setLanguage(
-        translatedText.isNotEmpty ? "ar-SA" : "en-US");
+    await flutterTts.setLanguage(translatedText.isNotEmpty ? "ar-SA" : "en-US");
     await flutterTts.setSpeechRate(0.4);
     await flutterTts.setPitch(1.0);
 
@@ -118,14 +131,11 @@ class _TtsScreenState extends State<TtsScreen> {
                                 : recognizedText,
                             style: const TextStyle(fontSize: 16),
                           ),
-
                           const SizedBox(height: 20),
-
                           if (isTranslating)
                             const Center(
                               child: CircularProgressIndicator(),
                             ),
-
                           if (translatedText.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 12),
@@ -142,12 +152,30 @@ class _TtsScreenState extends State<TtsScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   Wrap(
                     spacing: 12,
                     children: [
+                      Row(
+                        children: [
+                          const Text("Translate to: "),
+                          const SizedBox(width: 10),
+                          DropdownButton<String>(
+                            value: selectedTranslateLang,
+                            items: translationLanguages.entries.map((e) {
+                              return DropdownMenuItem(
+                                value: e.value,
+                                child: Text(e.key),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedTranslateLang = value!;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                       ElevatedButton.icon(
                         onPressed: isTranslating ? null : _translateText,
                         icon: const Icon(Icons.translate),
