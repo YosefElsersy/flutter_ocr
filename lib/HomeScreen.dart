@@ -1,4 +1,4 @@
-// HomeScreen.dart (Enhanced + Export)
+// HomeScreen.dart (Enhanced + Export + ScanQR)
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -12,7 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'TtsScreen.dart';
-
+import 'ScanQr.dart';
 import 'CardScanner.dart';
 import 'EnhanceScreen.dart';
 import 'RecognizerScreen.dart';
@@ -40,9 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // To avoid multiple export actions at the same time
   bool _isExporting = false;
 
-  bool scan = false;
+  bool cardScan = false;
   bool recognize = true;
   bool enhance = false;
+  bool scanQR = false;
 
   @override
   void initState() {
@@ -164,12 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
 
-        // This pushes the logo to the center
         const Spacer(),
-
-        // Team Logo
-
-        const SizedBox(width: 16),
 
         // Dark / Light Button
         Container(
@@ -213,25 +209,40 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           _buildModeButton(
-            icon: Icons.qr_code_scanner,
-            label: 'Scan',
-            isSelected: scan,
+            icon: Icons.credit_card,
+            label: 'Card',
+            isSelected: cardScan,
             onTap: () => setState(() {
-              scan = true;
+              cardScan = true;
               recognize = false;
               enhance = false;
+              scanQR = false;
             }),
             isDark: isDark,
             theme: theme,
           ),
           _buildModeButton(
-            icon: Icons.document_scanner,
-            label: 'Recognize',
+            icon: Icons.text_fields,
+            label: 'Text',
             isSelected: recognize,
             onTap: () => setState(() {
-              scan = false;
+              cardScan = false;
               recognize = true;
               enhance = false;
+              scanQR = false;
+            }),
+            isDark: isDark,
+            theme: theme,
+          ),
+          _buildModeButton(
+            icon: Icons.qr_code_scanner,
+            label: 'QR',
+            isSelected: scanQR,
+            onTap: () => setState(() {
+              cardScan = false;
+              recognize = false;
+              enhance = false;
+              scanQR = true;
             }),
             isDark: isDark,
             theme: theme,
@@ -241,9 +252,10 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Enhance',
             isSelected: enhance,
             onTap: () => setState(() {
-              scan = false;
+              cardScan = false;
               recognize = false;
               enhance = true;
+              scanQR = false;
             }),
             isDark: isDark,
             theme: theme,
@@ -287,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   color: isSelected
                       ? Colors.white
@@ -523,9 +535,13 @@ class _HomeScreenState extends State<HomeScreen> {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
         return RecognizerScreen(image);
       }));
-    } else if (scan) {
+    } else if (cardScan) {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
         return CardScanner(image);
+      }));
+    } else if (scanQR) {
+      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+        return ScanQR(image);
       }));
     } else if (enhance) {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
