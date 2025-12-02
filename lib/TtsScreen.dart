@@ -21,14 +21,24 @@ class _TtsScreenState extends State<TtsScreen> {
   String translatedText = "";
   bool isTranslating = false;
 
+  // Translate options
   String selectedTranslateLang = "ar";
-
   final translationLanguages = {
     "Arabic": "ar",
     "English": "en",
     "French": "fr",
     "Spanish": "es",
     "German": "de",
+  };
+
+  // TTS options
+  String selectedTtsLanguage = "en-US";
+  final ttsLanguages = {
+    "English": "en-US",
+    "Arabic": "ar-SA",
+    "French": "fr-FR",
+    "Spanish": "es-ES",
+    "German": "de-DE",
   };
 
   @override
@@ -50,14 +60,12 @@ class _TtsScreenState extends State<TtsScreen> {
     });
   }
 
-  // Translate then automatically play using the translated language
   Future<void> _translateText() async {
     if (recognizedText.trim().isEmpty) return;
 
     setState(() => isTranslating = true);
 
     final translator = GoogleTranslator();
-    // final translation = await translator.translate(recognizedText, to: 'ar');
     final translation = await translator.translate(
       recognizedText,
       to: selectedTranslateLang,
@@ -66,20 +74,6 @@ class _TtsScreenState extends State<TtsScreen> {
     translatedText = translation.text;
     isTranslating = false;
     setState(() {});
-
-    // Auto Play Arabic translation
-    await flutterTts.setLanguage("ar-SA");
-    await flutterTts.setSpeechRate(0.4);
-    await flutterTts.setPitch(1.0);
-
-    isSpeaking = true;
-    setState(() {});
-
-    await flutterTts.speak(translatedText);
-
-    flutterTts.setCompletionHandler(() {
-      setState(() => isSpeaking = false);
-    });
   }
 
   Future<void> _speak() async {
@@ -88,7 +82,7 @@ class _TtsScreenState extends State<TtsScreen> {
 
     if (textToRead.trim().isEmpty) return;
 
-    await flutterTts.setLanguage(translatedText.isNotEmpty ? "ar-SA" : "en-US");
+    await flutterTts.setLanguage(selectedTtsLanguage);
     await flutterTts.setSpeechRate(0.4);
     await flutterTts.setPitch(1.0);
 
@@ -131,11 +125,12 @@ class _TtsScreenState extends State<TtsScreen> {
                                 : recognizedText,
                             style: const TextStyle(fontSize: 16),
                           ),
+
                           const SizedBox(height: 20),
+
                           if (isTranslating)
-                            const Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                            const Center(child: CircularProgressIndicator()),
+
                           if (translatedText.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 12),
@@ -152,34 +147,62 @@ class _TtsScreenState extends State<TtsScreen> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
+
+                  // Translation language selector
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Translate to:  "),
+                      DropdownButton<String>(
+                        value: selectedTranslateLang,
+                        items: translationLanguages.entries
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e.value,
+                                child: Text(e.key),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) =>
+                            setState(() => selectedTranslateLang = value!),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // TTS Language selector
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Speak in:  "),
+                      DropdownButton<String>(
+                        value: selectedTtsLanguage,
+                        items: ttsLanguages.entries
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e.value,
+                                child: Text(e.key),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) =>
+                            setState(() => selectedTtsLanguage = value!),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
                   Wrap(
                     spacing: 12,
                     children: [
-                      Row(
-                        children: [
-                          const Text("Translate to: "),
-                          const SizedBox(width: 10),
-                          DropdownButton<String>(
-                            value: selectedTranslateLang,
-                            items: translationLanguages.entries.map((e) {
-                              return DropdownMenuItem(
-                                value: e.value,
-                                child: Text(e.key),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedTranslateLang = value!;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
                       ElevatedButton.icon(
                         onPressed: isTranslating ? null : _translateText,
                         icon: const Icon(Icons.translate),
-                        label: const Text("Translate & Play"),
+                        label: const Text("Translate"),
                       ),
                       ElevatedButton.icon(
                         onPressed: isSpeaking
@@ -189,11 +212,6 @@ class _TtsScreenState extends State<TtsScreen> {
                           isSpeaking ? Icons.stop : Icons.play_arrow,
                         ),
                         label: Text(isSpeaking ? "Stop" : "Play"),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: null, // Disabled as requested
-                        icon: const Icon(Icons.save_alt),
-                        label: const Text("Save TXT"),
                       ),
                     ],
                   ),
