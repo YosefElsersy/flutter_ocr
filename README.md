@@ -908,9 +908,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - GitHub: [@yosefelsersy](https://github.com/YosefElsersy)
 - Project Link: [https://github.com/konynour/flutter_ocr](https://github.com/konynour/flutter_ocr)
 
+<<<<<<< HEAD
 
 
 **Nour kony**
+=======
+**Nour Kony**
+>>>>>>> origin/main
 - GitHub: [@konynour](https://github.com/konynour)
 - Project Link: [https://github.com/konynour/flutter_ocr](https://github.com/konynour/flutter_ocr)
 
