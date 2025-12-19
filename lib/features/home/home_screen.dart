@@ -6,16 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
 import '../text_to_speech/tts_screen.dart';
 import '../qr_scanner/scan_qr.dart';
 import '../card_scanner/card_scanner.dart';
 import '../image_enhancement/enhance_screen.dart';
 import '../text_recognition/recognizer_screen.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../core/utils/helpers.dart';
 import '../../shared/widgets/image_cropper_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -34,9 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Last captured or picked image (used for export)
   File? _lastImage;
-
-  // To avoid multiple export actions at the same time
-  bool _isExporting = false;
 
   bool cardScan = false;
   bool recognize = true;
@@ -623,7 +618,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: const Text('Export as PDF (image)'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _exportAsPdfWithImage();
+                  ExportHelper.exportImageAsPdf(_lastImage!, context);
                 },
               ),
               ListTile(
@@ -631,7 +626,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: const Text('Export as PDF (recognized text)'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _exportRecognizedTextAsPdf();
+                  ExportHelper.exportTextAsPdf(_lastImage!, context);
                 },
               ),
               ListTile(
@@ -639,7 +634,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: const Text('Export as TXT (recognized text)'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _exportRecognizedTextAsTxt();
+                  ExportHelper.exportTextAsTxt(_lastImage!, context);
                 },
               ),
               const SizedBox(height: 8),
@@ -648,129 +643,5 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
-  }
-
-  Future<void> _exportAsPdfWithImage() async {
-    if (_lastImage == null || _isExporting) return;
-
-    try {
-      setState(() => _isExporting = true);
-
-      final pdf = pw.Document();
-      final imageBytes = await _lastImage!.readAsBytes();
-      final pdfImage = pw.MemoryImage(imageBytes);
-
-      pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) {
-            return pw.Center(
-              child: pw.Image(pdfImage),
-            );
-          },
-        ),
-      );
-
-      final dir = await getTemporaryDirectory();
-      final filePath =
-          '${dir.path}/ocr_export_image_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final file = File(filePath);
-      await file.writeAsBytes(await pdf.save());
-
-      await Share.shareXFiles([XFile(file.path)],
-          text: 'OCR image PDF export');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isExporting = false);
-      }
-    }
-  }
-
-  Future<void> _exportRecognizedTextAsTxt() async {
-    if (_lastImage == null || _isExporting) return;
-
-    try {
-      setState(() => _isExporting = true);
-
-      final textRecognizer =
-          TextRecognizer(script: TextRecognitionScript.latin);
-      final inputImage = InputImage.fromFile(_lastImage!);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      await textRecognizer.close();
-
-      final dir = await getTemporaryDirectory();
-      final filePath =
-          '${dir.path}/ocr_export_${DateTime.now().millisecondsSinceEpoch}.txt';
-      final file = File(filePath);
-      await file.writeAsString(recognizedText.text);
-
-      await Share.shareXFiles([XFile(file.path)],
-          text: 'OCR text TXT export');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isExporting = false);
-      }
-    }
-  }
-
-  Future<void> _exportRecognizedTextAsPdf() async {
-    if (_lastImage == null || _isExporting) return;
-
-    try {
-      setState(() => _isExporting = true);
-
-      final textRecognizer =
-          TextRecognizer(script: TextRecognitionScript.latin);
-      final inputImage = InputImage.fromFile(_lastImage!);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      await textRecognizer.close();
-
-      final pdf = pw.Document();
-      pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) {
-            return pw.Padding(
-              padding: const pw.EdgeInsets.all(24),
-              child: pw.Text(
-                recognizedText.text.isEmpty
-                    ? 'No text recognized.'
-                    : recognizedText.text,
-                style: const pw.TextStyle(fontSize: 12),
-              ),
-            );
-          },
-        ),
-      );
-
-      final dir = await getTemporaryDirectory();
-      final filePath =
-          '${dir.path}/ocr_export_text_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final file = File(filePath);
-      await file.writeAsBytes(await pdf.save());
-
-      await Share.shareXFiles([XFile(file.path)],
-          text: 'OCR text PDF export');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isExporting = false);
-      }
-    }
   }
 }
