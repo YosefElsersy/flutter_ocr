@@ -19,6 +19,18 @@ class _EnhanceScreenState extends State<EnhanceScreen> {
   late img.Image inputImage;
   double contrast = 150;
   double brightness = 1;
+  String _currentFilter = 'None';
+
+  final List<String> _filters = [
+    'None',
+    'Grayscale',
+    'Sepia',
+    'Invert',
+    'Blur',
+    'Emboss',
+    'Sketch',
+    'Pixelate'
+  ];
 
   @override
   void initState() {
@@ -29,6 +41,36 @@ class _EnhanceScreenState extends State<EnhanceScreen> {
 
   void enhanceImage() {
     img.Image temp = img.decodeImage(widget.image.readAsBytesSync())!;
+
+    // Apply Filter
+    switch (_currentFilter) {
+      case 'Grayscale':
+        temp = img.grayscale(temp);
+        break;
+      case 'Sepia':
+        temp = img.sepia(temp);
+        break;
+      case 'Invert':
+        temp = img.invert(temp);
+        break;
+      case 'Blur':
+        temp = img.gaussianBlur(temp, radius: 4);
+        break;
+      case 'Emboss':
+        temp = img.emboss(temp);
+        break;
+      case 'Sketch':
+        temp = img.sobel(temp);
+        break;
+      case 'Pixelate':
+        temp = img.pixelate(temp, size: 10);
+        break;
+      case 'None':
+      default:
+        // Do nothing
+        break;
+    }
+
     inputImage = img.adjustColor(temp, brightness: brightness);
     inputImage = img.contrast(inputImage, contrast: contrast);
     setState(() {});
@@ -51,14 +93,11 @@ class _EnhanceScreenState extends State<EnhanceScreen> {
         ),
         elevation: 0,
         actions: [
-          // Temporarily removed filter button until dependency is fixed
-          // IconButton(
-          //   icon: const Icon(Icons.filter_vintage),
-          //   tooltip: 'Apply Filters',
-          //   onPressed: () async {
-          //     // Filter functionality
-          //   },
-          // ),
+          IconButton(
+            icon: const Icon(Icons.filter_vintage),
+            tooltip: 'Apply Filters',
+            onPressed: _showFilterOptions,
+          ),
           IconButton(
             icon: const Icon(Icons.save_alt),
             tooltip: 'Save Image',
@@ -210,6 +249,7 @@ class _EnhanceScreenState extends State<EnhanceScreen> {
                     setState(() {
                       contrast = 150;
                       brightness = 1;
+                      _currentFilter = 'None';
                       enhanceImage();
                     });
                   },
@@ -355,6 +395,116 @@ class _EnhanceScreenState extends State<EnhanceScreen> {
           ),
         ],
       ),
+    );
+  }
+
+
+  void _showFilterOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Select Filter',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _filters.length,
+                  itemBuilder: (ctx, index) {
+                    final filter = _filters[index];
+                    final isSelected = _currentFilter == filter;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _currentFilter = filter;
+                          enhanceImage();
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.all(12),
+                        width: 80,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : (Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade200),
+                          borderRadius: BorderRadius.circular(16),
+                          border: isSelected
+                              ? Border.all(
+                                  color: Theme.of(context).primaryColor,
+                                  width: 2)
+                              : null,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                              Icon(
+                                filter == 'None'
+                                    ? Icons.block
+                                    : filter == 'Grayscale'
+                                        ? Icons.filter_b_and_w
+                                        : filter == 'Sepia'
+                                            ? Icons.nature_people
+                                            : filter == 'Invert'
+                                                ? Icons.invert_colors
+                                                : filter == 'Blur'
+                                                    ? Icons.blur_on
+                                                    : filter == 'Emboss'
+                                                        ? Icons.terrain
+                                                        : filter == 'Sketch'
+                                                            ? Icons.brush
+                                                            : Icons.grid_on,
+                                color: isSelected
+                                  ? Colors.white
+                                  : (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.grey
+                                      : Colors.grey.shade700),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              filter,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.grey
+                                        : Colors.grey.shade700),
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
