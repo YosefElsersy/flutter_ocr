@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:crop_your_image/crop_your_image.dart';
+import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
+import '../../core/utils/helpers.dart';
 import '../../core/providers/theme_provider.dart';
 
 class ImageCropperWidget extends StatefulWidget {
@@ -46,6 +48,31 @@ class _ImageCropperWidgetState extends State<ImageCropperWidget> {
         _rotationTurns = (_rotationTurns - 1) % 4;
       }
     });
+  }
+
+  Future<void> _selectAll() async {
+    setState(() => _isLoading = true);
+
+    // Give UI a chance to update
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    try {
+      img.Image? decoded = img.decodeImage(_imageBytes);
+      if (decoded != null) {
+        if (_rotationTurns != 0) {
+          decoded = img.copyRotate(decoded, angle: _rotationTurns * 90);
+        }
+        final resultBytes = Uint8List.fromList(img.encodeJpg(decoded));
+        if (mounted) {
+          Navigator.of(context).pop(resultBytes);
+        }
+      } else {
+        if (mounted) Navigator.of(context).pop(_imageBytes);
+      }
+    } catch (e) {
+      debugPrint("Error in Select All: $e");
+      if (mounted) Navigator.of(context).pop(_imageBytes);
+    }
   }
 
   @override
@@ -92,10 +119,13 @@ class _ImageCropperWidgetState extends State<ImageCropperWidget> {
                             Navigator.of(context).pop(result.croppedImage);
                           } else if (result is CropFailure) {
                             debugPrint("Crop failure: ${result.cause}");
-                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Crop failed: ${result.cause}")),
-                              );
+                            // Only show error if it's not a cancellation (if library distinguishes) or just show generic error
+                            // Assuming cancellation is handled by returning null or separate callback usually, but if cause contains cancel...
+                            final cause = result.cause.toString();
+                            if (!cause.toLowerCase().contains("cancel")) {
+                               if (context.mounted) {
+                                SnackBarHelper.showError(context, "Crop failed: $cause");
+                              }
                             }
                             Navigator.of(context).pop(null);
                           } else {
@@ -134,42 +164,55 @@ class _ImageCropperWidgetState extends State<ImageCropperWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildToolButton(
-                            icon: Icons.rotate_left,
-                            label: 'Rotate Left',
-                            onTap: () => _rotateImage(false),
-                            isDark: isDark,
-                          ),
-                          _buildToolButton(
-                            icon: Icons.rotate_right,
-                            label: 'Rotate Right',
-                            onTap: () => _rotateImage(true),
-                            isDark: isDark,
-                          ),
-                          _buildToolButton(
-                            icon: Icons.aspect_ratio,
-                            label: 'Square',
-                            onTap: () {
-                              setState(() {
-                                _aspectRatio = 1.0;
-                              });
-                            },
-                            isDark: isDark,
-                          ),
-                          _buildToolButton(
-                            icon: Icons.crop_free,
-                            label: 'Free',
-                            onTap: () {
-                              setState(() {
-                                _aspectRatio = null;
-                              });
-                            },
-                            isDark: isDark,
-                          ),
-                        ],
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildToolButton(
+                              icon: Icons.rotate_left,
+                              label: 'Rotate Left',
+                              onTap: () => _rotateImage(false),
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildToolButton(
+                              icon: Icons.rotate_right,
+                              label: 'Rotate Right',
+                              onTap: () => _rotateImage(true),
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildToolButton(
+                              icon: Icons.aspect_ratio,
+                              label: 'Square',
+                              onTap: () {
+                                setState(() {
+                                  _aspectRatio = 1.0;
+                                });
+                              },
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildToolButton(
+                              icon: Icons.crop_free,
+                              label: 'Free',
+                              onTap: () {
+                                setState(() {
+                                  _aspectRatio = null;
+                                });
+                              },
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildToolButton(
+                              icon: Icons.select_all,
+                              label: 'Select All',
+                              onTap: _selectAll,
+                              isDark: isDark,
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
                       // SizedBox(

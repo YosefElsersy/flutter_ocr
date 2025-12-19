@@ -70,7 +70,7 @@ class _RecognizerScreenState extends State<CardScanner> {
       appBar: AppBar(
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.blueAccent,
         title: const Text(
-          'Scanner',
+          'Card Scanner',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         iconTheme: const IconThemeData(color: Colors.white),

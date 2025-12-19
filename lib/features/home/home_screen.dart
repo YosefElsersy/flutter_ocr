@@ -525,23 +525,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // If user cancels cropping, return
       if (croppedData == null) {
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text("Cropping cancelled (returned null)")),
-           );
-        }
-        return;
-      }
+      // User cancelled cropping, do nothing
+      return;
+    }
 
-      if (croppedData is! Uint8List) {
-        debugPrint("Cropped data is not Uint8List, it is ${croppedData.runtimeType}");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Cropping failed: data is ${croppedData.runtimeType}, expected Uint8List")),
-          );
-        }
-        return;
+    if (croppedData is! Uint8List) {
+      debugPrint(
+          "Cropped data is not Uint8List, it is ${croppedData.runtimeType}");
+      if (mounted) {
+        SnackBarHelper.showError(
+            context, "Cropping failed: data is ${croppedData.runtimeType}");
       }
+      return;
+    }
 
       // Create a new temp file for cropped image
       final tempDir = await getTemporaryDirectory();
@@ -574,9 +570,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       debugPrint("Error processing image: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error processing image: $e")),
-        );
+        SnackBarHelper.showError(context, "Error processing image: $e");
       }
     }
   }
