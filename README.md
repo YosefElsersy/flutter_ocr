@@ -23,6 +23,7 @@ The project follows a **feature-based architecture** for better organization, sc
 - Crop images before processing for better accuracy
 - Rotate images left/right
 - Multiple aspect ratios (Free, Square)
+- **Select All**: Instantly select full image
 - Real-time crop preview
 - Smooth, intuitive interface
 - Integrated into the capture workflow
@@ -40,7 +41,9 @@ The project follows a **feature-based architecture** for better organization, sc
 
 ### 🖼 Image Enhancement
 - Adjust contrast (80-200 range)
+- Adjust contrast (80-200 range)
 - Modify brightness (1-10 scale)
+- **Advanced Filters**: Grayscale, Sepia, Invert, Blur, Emboss, Sketch, Pixelate
 - Real-time preview of adjustments
 - Save enhanced images to gallery
 - Reset to default values
@@ -61,7 +64,8 @@ The project follows a **feature-based architecture** for better organization, sc
   - English (US), Arabic (SA), French (FR), Spanish (ES), German (DE)
 - Adjustable speech rate and pitch
 - Play/Stop controls with visual feedback
-- Works with both original and translated text
+- **Individual Playback**: Play original and translated text independently
+- **Auto-Sync**: Language automatically matches translation
 
 ### 📷 QR & Barcode Scanner
 - Scan QR codes and barcodes from images
@@ -342,9 +346,7 @@ class AppConstants {
 
 #### 🔊 TTS Language Switching
 - **Issue**: After translating to Arabic, TTS continues playing in Arabic even when English is selected
-- **Cause**: TTS engine state not properly reset between language changes
-- **Workaround**: Restart the app to reset TTS state
-- **Fix Status**: 🔄 In Progress
+- **Fix Status**: ✅ Fixed (v1.2)
 
 #### 📍 Geo Location Parsing
 - **Issue**: `geo:` URL format in QR codes not properly supported by ML Kit
@@ -356,15 +358,18 @@ class AppConstants {
 
 ### Roadmap
 
-#### Recent Updates (v1.1) ✅
+#### Recent Updates (v1.2) ✅
+- [x] **New**: Advanced Image Filters (Blur, Emboss, etc.)
+- [x] **New**: "Select All" in Image Cropper
+- [x] **Fix**: TTS Language Sync & Individual Playback
+- [x] **Fix**: Cropper Navigation & Errors
 - [x] Image cropping with rotation
 - [x] Theme persistence with local storage
 - [x] Enhance button in recognizer screen
 - [x] Feature-based architecture
 - [x] Improved error handling
 
-#### Short Term (v1.2)
-- [ ] Fix TTS language switching bug
+#### Short Term (v1.3)
 - [ ] Add more crop aspect ratios (4:3, 16:9, etc.)
 - [ ] Add proper routing with named routes
 - [ ] Add loading states for all async operations
