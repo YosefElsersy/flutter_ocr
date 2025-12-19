@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 class CardScanner extends StatefulWidget {
   final File image;
-  CardScanner(this.image, {super.key});
+  const CardScanner(this.image, {super.key});
 
   @override
   State<CardScanner> createState() => _RecognizerScreenState();
@@ -31,7 +31,7 @@ class _RecognizerScreenState extends State<CardScanner> {
   }
 
   String results = "";
-  doTextRecognition() async {
+  Future<void> doTextRecognition() async {
     setState(() {
       isLoading = true;
     });

@@ -87,9 +87,22 @@ class _ImageCropperWidgetState extends State<ImageCropperWidget> {
                       child: Crop(
                         image: _imageBytes,
                         controller: _cropController,
-                        onCropped: (croppedData) {
-                          // Return cropped image data
-                          Navigator.of(context).pop(croppedData);
+                        onCropped: (result) {
+                          if (result is CropSuccess) {
+                            Navigator.of(context).pop(result.croppedImage);
+                          } else if (result is CropFailure) {
+                            debugPrint("Crop failure: ${result.cause}");
+                             if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Crop failed: ${result.cause}")),
+                              );
+                            }
+                            Navigator.of(context).pop(null);
+                          } else {
+                             // Fallback in case of unexpected type, ensuring we don't crash with type error later
+                             debugPrint("Unknown crop result type: ${result.runtimeType}");
+                             Navigator.of(context).pop(null);
+                          }
                         },
                         aspectRatio: _aspectRatio,
                         withCircleUi: false,
@@ -159,32 +172,32 @@ class _ImageCropperWidgetState extends State<ImageCropperWidget> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            _cropController.crop();
-                          },
-                          icon: const Icon(Icons.crop, size: 24),
-                          label: const Text(
-                            'Crop & Continue',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? const Color(0xFF42A5F5)
-                                : Colors.blueAccent,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // SizedBox(
+                      //   width: double.infinity,
+                      //   child: ElevatedButton.icon(
+                      //     onPressed: () {
+                      //       _cropController.crop();
+                      //     },
+                      //     icon: const Icon(Icons.crop, size: 24),
+                      //     label: const Text(
+                      //       'Crop & Continue',
+                      //       style: TextStyle(
+                      //         fontSize: 16,
+                      //         fontWeight: FontWeight.bold,
+                      //       ),
+                      //     ),
+                      //     style: ElevatedButton.styleFrom(
+                      //       backgroundColor: isDark
+                      //           ? const Color(0xFF42A5F5)
+                      //           : Colors.blueAccent,
+                      //       foregroundColor: Colors.white,
+                      //       padding: const EdgeInsets.symmetric(vertical: 16),
+                      //       shape: RoundedRectangleBorder(
+                      //         borderRadius: BorderRadius.circular(12),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),

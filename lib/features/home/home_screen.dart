@@ -1,5 +1,6 @@
 // HomeScreen.dart (Fixed Version)
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -516,42 +517,72 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // This is called after picking or capturing an image
   Future<void> processImage(File image) async {
-    _lastImage = image;
+    try {
+      _lastImage = image;
 
-    // Navigate to crop screen
-    final croppedData = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ImageCropperWidget(imageFile: image),
-      ),
-    );
+      // Navigate to crop screen
+      final croppedData = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageCropperWidget(imageFile: image),
+        ),
+      );
 
-    // If user cancels cropping, return
-    if (croppedData == null) return;
+      // If user cancels cropping, return
+      if (croppedData == null) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text("Cropping cancelled (returned null)")),
+           );
+        }
+        return;
+      }
 
-    // Save cropped image
-    await image.writeAsBytes(croppedData);
-    _lastImage = image;
+      if (croppedData is! Uint8List) {
+        debugPrint("Cropped data is not Uint8List, it is ${croppedData.runtimeType}");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Cropping failed: data is ${croppedData.runtimeType}, expected Uint8List")),
+          );
+        }
+        return;
+      }
 
-    // Navigate to appropriate screen based on mode
-    if (!mounted) return;
+      // Create a new temp file for cropped image
+      final tempDir = await getTemporaryDirectory();
+      final uniqueId = DateTime.now().millisecondsSinceEpoch;
+      final croppedFile = File('${tempDir.path}/cropped_$uniqueId.jpg');
 
-    if (recognize) {
-      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-        return RecognizerScreen(image);
-      }));
-    } else if (cardScan) {
-      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-        return CardScanner(image);
-      }));
-    } else if (scanQR) {
-      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-        return ScanQR(image);
-      }));
-    } else if (enhance) {
-      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-        return EnhanceScreen(image);
-      }));
+      await croppedFile.writeAsBytes(croppedData);
+      _lastImage = croppedFile;
+
+      // Navigate to appropriate screen based on mode
+      if (!mounted) return;
+
+      if (recognize) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+          return RecognizerScreen(croppedFile);
+        }));
+      } else if (cardScan) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+          return CardScanner(croppedFile);
+        }));
+      } else if (scanQR) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+          return ScanQR(croppedFile);
+        }));
+      } else if (enhance) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+          return EnhanceScreen(croppedFile);
+        }));
+      }
+    } catch (e) {
+      debugPrint("Error processing image: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error processing image: $e")),
+        );
+      }
     }
   }
 
