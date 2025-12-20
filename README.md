@@ -429,13 +429,7 @@ Contributions are welcome! Please follow these steps:
 - Update documentation as needed
 - Ensure all tests pass before submitting
 
----
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 👨‍💻 Authors
 
@@ -507,6 +501,14 @@ Boost your productivity:
 - One-tap copy for all results
 - Fast mode switching
 - Intuitive navigation
+
+---
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
