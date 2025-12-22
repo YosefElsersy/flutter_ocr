@@ -468,14 +468,17 @@ If you find this project useful, please consider:
 ## 📸 Screenshots
 
 ### Light Mode
-![Home Screen](screenshots/home_light.png)
-![Text Recognition](screenshots/recognition_light.png)
-![Image Cropping](screenshots/crop_light.png)
+![Home Screen](<img width="401" height="875" alt="image" src="https://github.com/user-attachments/assets/af45ea5d-d696-4e55-b089-a976ce7c8b36" />
+)
+![TTS](<img width="401" height="875" alt="image" src="https://github.com/user-attachments/assets/cfd9d79e-46ae-430c-91d3-185d0ce3df32" />)
+![Image Cropping](<img width="401" height="875" alt="image" src="https://github.com/user-attachments/assets/c2c5d4ef-1fd4-409d-8e60-94bb610fcd60" />
+)
 
 ### Dark Mode
-![Home Screen](screenshots/home_dark.png)
-![Text Recognition](screenshots/recognition_dark.png)
-![Image Enhancement](screenshots/enhance_dark.png)
+![Home Screen](<img width="401" height="875" alt="image" src="https://github.com/user-attachments/assets/4f9c91d1-dee8-458b-aa1c-87a13e556507" />
+)
+![TTS](<img width="401" height="875" alt="image" src="https://github.com/user-attachments/assets/4a4b6c32-e8f4-486a-9279-5e285dbec460" />
+)
 
 ---
 
